@@ -115,9 +115,28 @@ and prints `RESULT: PASS` or `FAIL`.
 
 ## Verification status
 
-- **Compiles cleanly against Linux 6.6** with `W=1` (extra warnings), `-Werror` and KASAN instrumentation.
-- The test binary builds statically with `-Wall -Wextra -Werror`.
-- **Booting it in QEMU has not been run yet.** The CI workflow does that on every push; check the Actions tab for the result before relying on this.
+[![ci](https://github.com/ribhu0908/edu-pci-driver/actions/workflows/ci.yml/badge.svg)](https://github.com/ribhu0908/edu-pci-driver/actions/workflows/ci.yml)
+
+Every push builds Linux 6.6 with KASAN, lockdep and DMA-API debugging, builds `edu.ko` with `W=1 -Werror`, boots it in QEMU with `-device edu`, and runs the suite. A passing run looks like this:
+
+```
+edu 0000:00:04.0: edu v1.0 at /dev/edu0, MSI irq 24, dma buf 0x00000000057dc000
+[ RUN  ] test_info_and_liveness
+  device /dev/edu0 v1.0, irq=MSI
+[ RUN  ] test_factorial_via_irq
+[ RUN  ] test_dma_roundtrip_full_buffer
+[ RUN  ] test_dma_offsets_and_bounds
+[ RUN  ] test_concurrent_processes
+  irqs=67 dma=54 bytes=57564 spurious=0
+[ RUN  ] test_hot_unplug_with_open_file
+edu 0000:00:04.0: removed /dev/edu0 (irqs=67 dma=54 timeouts=0)
+[ LOG  ] kernel log scan: clean (no KASAN/lockdep/WARN/DMA-API reports)
+
+66 checks, 0 failed
+RESULT: PASS
+```
+
+The first CI runs caught two real issues, both fixed: the kernel build step did not produce `Module.symvers`, so `modpost` could not link the module; and the log scanner matched the kernel's informational `DMA-API: debugging enabled` boot line. It now matches only reports that name this driver.
 
 ## Design notes
 

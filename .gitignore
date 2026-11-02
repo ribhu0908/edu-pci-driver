@@ -1,0 +1,9 @@
+build/
+*.o
+*.ko
+*.mod
+*.mod.c
+.*.cmd
+modules.order
+Module.symvers
+qemu.log

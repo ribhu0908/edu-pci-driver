@@ -21,7 +21,7 @@ jobs:
           make -C ~/linux olddefconfig
 
       - name: Build kernel
-        run: make -C ~/linux -j"$(nproc)" bzImage modules_prepare
+        run: make -C ~/linux -j"$(nproc)" bzImage modules   # modules also writes Module.symvers, needed to link edu.ko
 
       - name: Build driver (W=1, -Werror) and boot it in QEMU
         run: make qemu KDIR=$HOME/linux

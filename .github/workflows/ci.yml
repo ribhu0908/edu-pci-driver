@@ -1,0 +1,27 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  qemu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain and QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc flex bison libelf-dev \
+               libssl-dev cpio qemu-system-x86
+
+      - name: Fetch and configure Linux 6.6 (debug kernel)
+        run: |
+          git clone --depth 1 --branch v6.6 https://github.com/torvalds/linux ~/linux
+          cp kernel.config ~/linux/.config
+          make -C ~/linux olddefconfig
+
+      - name: Build kernel
+        run: make -C ~/linux -j"$(nproc)" bzImage modules_prepare
+
+      - name: Build driver (W=1, -Werror) and boot it in QEMU
+        run: make qemu KDIR=$HOME/linux

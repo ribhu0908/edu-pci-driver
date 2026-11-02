@@ -249,8 +249,12 @@ static void scan_kernel_log(void)
 	if (n < 0)
 		return;
 	log[n] = 0;
-	static const char *bad[] = { "KASAN", "BUG:", "WARNING:", "possible circular",
-				     "inconsistent lock", "DMA-API", "Oops", "general protection" };
+	/* Patterns of real reports only. Boot prints informational lines such
+	 * as "DMA-API: debugging enabled by kernel config", so DMA-API is
+	 * matched only when it names this driver, as its error reports do. */
+	static const char *bad[] = { "BUG: KASAN", "BUG:", "WARNING:", "possible circular",
+				     "inconsistent lock", "DMA-API: edu", "Oops",
+				     "general protection" };
 	int found = 0;
 	for (size_t i = 0; i < sizeof bad / sizeof bad[0]; i++)
 		if (strstr(log, bad[i])) {
